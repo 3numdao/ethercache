@@ -1,5 +1,6 @@
 var express = require('express');
 var router = express.Router();
+const { providers } = require("ethers");
 
 const MILLIS_PER_MINUTE = 60000;
 const ETH_API_SERVER =
@@ -16,7 +17,7 @@ const ETH_API_SERVER =
 const memoryCache = {};
 
 async function doLookup(name) {
-  const provider = new etherProviders.JsonRpcProvider(ETH_API_SERVER);
+  const provider = new providers.JsonRpcProvider(ETH_API_SERVER);
   const resolver = await provider.getResolver(name);
   const url = await resolver.getText('phone');
   return url;
