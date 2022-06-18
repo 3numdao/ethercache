@@ -50,10 +50,10 @@ router.get("/", async (request, response) => {
     if (name && name != '') {
         const url = await getUrl(name);
         response.setHeader("Content-Type", "text/plain")
-        response.status(200).send(url);
+        return response.status(200).send(url);
     }
-
-    res.status(404).send("Name was not found");
+      
+    return response.status(404).send("Name was not found");
 });
 
 module.exports = router;
