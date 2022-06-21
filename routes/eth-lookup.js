@@ -79,14 +79,14 @@ router.get("/", async (request, response) => {
         return response.status(200).send(lookupObject);
     }
 
-    return response.status(400).send({message: "Name was not provided. Name is a required query param.", address: null});
+    return response.status(400).send({message: "Name was not provided. Name is a required query param.", name: "BadRequest"});
   } catch(e) {
     if (e instanceof NotFoundError) {
       return response.status(e.code).send(e.toInformativeObject());
     }
   }
 
-  return response.status(500).send({message: "Unexpected error occurred", address: null});
+  return response.status(500).send({message: "Unexpected error occurred", name: "UnexpectedError"});
 });
 
 module.exports = router;
