@@ -9,7 +9,8 @@ const ETH_API_SERVER =
 /*
  * {
  *  [key: string]: {
- *    url: string,
+ *    phone: string,
+ *    address: string,
  *    goodTill: number
  *  }
  * }
@@ -17,11 +18,16 @@ const ETH_API_SERVER =
 const memoryCache = {};
 
 class NotFoundError extends Error {
-  constructor(message) {
+  constructor(message, name, address) {
     super(message);
 
-    this.name = 'NotFoundError';
+    this.name = name;
     this.code = 404;
+    this.address = address;
+  }
+
+  toInformativeObject() {
+    return {name: this.name, address: this.address, message: this.message};
   }
 }
 
@@ -29,36 +35,38 @@ async function doLookup(name) {
   const provider = new providers.JsonRpcProvider(ETH_API_SERVER);
   const resolver = await provider.getResolver(name);
   if (!resolver) {
-    throw new NotFoundError("Name provided was not found");
+    throw new NotFoundError("ENS name was not found", "ENSNotFound", null);
   }
 
-  const url = await resolver.getText('phone');
+  const [address, phone] = await Promise.all([resolver.getAddress(), resolver.getText("phone")]);
 
-  if (!url) {
-    throw new NotFoundError("User did not have a phone number");
+  if (!phone) {
+    throw new NotFoundError("ENS name did not have a phone number", "PhoneNotFound", address);
   }
-  return url;
+
+  return {name, phone, address};
 }
 
-function saveNameUrl(name, url) {
+function saveNameUrl(lookupObject, url) {
   const minutes = 5;
-  memoryCache[name] = {
-    url,
+  memoryCache[lookupObject.name] = {
+    phone: lookupObject.phone,
+    address: lookupObject.address,
     goodTill: Date.now() + MILLIS_PER_MINUTE * minutes
   }
 }
 
 async function getUrl(name) {
-  const nameFromCache = memoryCache[name];
-  if (nameFromCache && nameFromCache.goodTill > Date.now()) {
-    return nameFromCache.url;
+  const memoryItem = memoryCache[name];
+  if (memoryItem && memoryItem.goodTill > Date.now()) {
+    return memoryItem;
   }
 
-  const url = await doLookup(name);
-  if (url) 
-    saveNameUrl(name, url);
+  const lookupObject = await doLookup(name);
+  if (lookupObject) 
+    saveNameUrl(lookupObject);
 
-  return url;
+  return lookupObject;
 }
 
 router.get("/", async (request, response) => {
@@ -66,19 +74,19 @@ router.get("/", async (request, response) => {
     const name = request.query.name;
 
     if (name && name != '') {
-        const url = await getUrl(name);
-        response.setHeader("Content-Type", "text/plain")
-        return response.status(200).send(url);
+        const lookupObject = await getUrl(name);
+        response.setHeader("Content-Type", "application/json")
+        return response.status(200).send(lookupObject);
     }
 
-    return response.status(400).send({message: "Name was not provided. Name is a required query param."});
+    return response.status(400).send({message: "Name was not provided. Name is a required query param.", address: null});
   } catch(e) {
     if (e instanceof NotFoundError) {
-      return response.status(e.code).send(e.message)
+      return response.status(e.code).send(e.toInformativeObject());
     }
   }
 
-  return response.status(500).send("Unexpected error occurred");
+  return response.status(500).send({message: "Unexpected error occurred", address: null});
 });
 
 module.exports = router;
