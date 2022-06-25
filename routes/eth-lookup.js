@@ -83,7 +83,6 @@ router.get("/", async (request, response) => {
     if (name && name != '') {
         const lookupObject = await getUrl(name);
         response.setHeader("Content-Type", "application/json");
-        response.setHeader("Cache-Control", "No-Store");
         return response.status(200).send(lookupObject);
     }
 
