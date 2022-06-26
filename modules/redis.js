@@ -1,12 +1,8 @@
 const { createClient } = require("redis");
 
-const client = createClient();
-
-client.on("error", (err) => console.log("Redis client error", err));
-
-async function init() {
+async function init(url) {
+    const client = createClient(url ? {url} : undefined);
     await client.connect();
-
     return client;
 }
 
