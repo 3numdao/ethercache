@@ -1,6 +1,9 @@
 var express = require('express');
 var router = express.Router();
 const { providers } = require("ethers");
+const redis = require("../modules/redis");
+
+const clientPromise = redis.init(process.env.REDIS_TLS_URL);
 
 const MILLIS_PER_MINUTE = 60000;
 const ETH_API_SERVER =
@@ -47,24 +50,35 @@ async function doLookup(name) {
   return {name, phone, address};
 }
 
-function saveNameUrl(lookupObject, url) {
-  const minutes = 5;
-  memoryCache[lookupObject.name] = {
+async function saveNameUrl(lookupObject, minutes = 5) {
+  const secondsPerMinute = 60;
+
+  const client = await clientPromise;
+  await client.set(lookupObject.name, JSON.stringify({
     phone: lookupObject.phone,
-    address: lookupObject.address,
-    goodTill: Date.now() + MILLIS_PER_MINUTE * minutes
-  }
+    address: lookupObject.address
+  }));
+  await client.expire(lookupObject.name, minutes * secondsPerMinute);
 }
 
 async function getUrl(name) {
-  const memoryItem = memoryCache[name];
-  if (memoryItem && memoryItem.goodTill > Date.now()) {
-    return memoryItem;
+  const client = await clientPromise;
+  const memoryItem = await client.get(name);
+  if (memoryItem) {
+    return {
+      name,
+      ...JSON.parse(memoryItem)
+    };
   }
 
   const lookupObject = await doLookup(name);
-  if (lookupObject) 
-    saveNameUrl(lookupObject);
+  if (lookupObject) {
+    let minutes = process.env.REDIS_EXPIRATION_MINUTES
+    if (typeof minutes === "string")
+      minutes = parseInt(minutes);
+
+    await saveNameUrl(lookupObject, minutes);
+  }
 
   return lookupObject;
 }
@@ -75,7 +89,7 @@ router.get("/", async (request, response) => {
 
     if (name && name != '') {
         const lookupObject = await getUrl(name);
-        response.setHeader("Content-Type", "application/json")
+        response.setHeader("Content-Type", "application/json");
         return response.status(200).send(lookupObject);
     }
 
