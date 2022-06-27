@@ -3,7 +3,7 @@ var router = express.Router();
 const { providers } = require("ethers");
 const redis = require("../modules/redis");
 
-const clientPromise = redis.init(process.env.REDIS_TLS_URL);
+const clientPromise = redis.init(process.env.REDIS_URL);
 
 const MILLIS_PER_MINUTE = 60000;
 const ETH_API_SERVER =
