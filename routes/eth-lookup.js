@@ -3,8 +3,6 @@ var router = express.Router();
 const { providers } = require("ethers");
 const redis = require("../modules/redis");
 
-const clientPromise = redis.init(process.env.REDIS_URL);
-
 const MILLIS_PER_MINUTE = 60000;
 const ETH_API_SERVER =
     `https://eth-mainnet.alchemyapi.io/v2/${process.env.ether_token}`;
@@ -53,17 +51,20 @@ async function doLookup(name) {
 async function saveNameUrl(lookupObject, minutes = 5) {
   const secondsPerMinute = 60;
 
-  const client = await clientPromise;
+  const client = await redis.init(process.env.REDIS_TLS_URL);
   await client.set(lookupObject.name, JSON.stringify({
     phone: lookupObject.phone,
     address: lookupObject.address
   }));
   await client.expire(lookupObject.name, minutes * secondsPerMinute);
+  await client.quit();
 }
 
 async function getUrl(name) {
-  const client = await clientPromise;
+  const client = await redis.init(process.env.REDIS_TLS_URL);
   const memoryItem = await client.get(name);
+  await client.quit();
+
   if (memoryItem) {
     return {
       name,
