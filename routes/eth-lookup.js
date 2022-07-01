@@ -51,7 +51,7 @@ async function doLookup(name) {
 async function saveNameUrl(lookupObject, minutes = 5) {
   const secondsPerMinute = 60;
 
-  const client = await redis.init(process.env.REDIS_TLS_URL);
+  const client = await redis.init(process.env.REDIS_URL);
   await client.set(lookupObject.name, JSON.stringify({
     phone: lookupObject.phone,
     address: lookupObject.address
@@ -61,7 +61,7 @@ async function saveNameUrl(lookupObject, minutes = 5) {
 }
 
 async function getUrl(name) {
-  const client = await redis.init(process.env.REDIS_TLS_URL);
+  const client = await redis.init(process.env.REDIS_URL);
   const memoryItem = await client.get(name);
   await client.quit();
 
