@@ -1,7 +1,7 @@
-var express = require("express");
+var express = require('express');
 var router = express.Router();
-const { providers } = require("ethers");
-const redis = require("../modules/redis");
+const { providers } = require('ethers');
+const redis = require('../modules/redis');
 
 const ETH_API_SERVER = `https://eth-mainnet.alchemyapi.io/v2/${process.env.ether_token}`;
 
@@ -34,18 +34,18 @@ async function doLookup(name) {
   const provider = new providers.JsonRpcProvider(ETH_API_SERVER);
   const resolver = await provider.getResolver(name);
   if (!resolver) {
-    throw new NotFoundError("ENS name was not found", "ENSNotFound", null);
+    throw new NotFoundError('ENS name was not found', 'ENSNotFound', null);
   }
 
   const [address, phone] = await Promise.all([
     resolver.getAddress(),
-    resolver.getText("phone"),
+    resolver.getText('phone'),
   ]);
 
   if (!phone) {
     throw new NotFoundError(
-      "ENS name did not have a phone number",
-      "PhoneNotFound",
+      'ENS name did not have a phone number',
+      'PhoneNotFound',
       address
     );
   }
@@ -83,7 +83,7 @@ async function getUrl(name) {
   const lookupObject = await doLookup(name);
   if (lookupObject) {
     let minutes = process.env.REDIS_EXPIRATION_MINUTES;
-    if (typeof minutes === "string") minutes = parseInt(minutes);
+    if (typeof minutes === 'string') minutes = parseInt(minutes);
 
     await saveNameUrl(lookupObject, minutes);
   }
@@ -91,33 +91,31 @@ async function getUrl(name) {
   return lookupObject;
 }
 
-router.get("/", async (request, response) => {
+router.get('/', async (request, response) => {
   try {
     const name = request.query.name;
 
-    if (name && name != "") {
+    if (name && name != '') {
       const lookupObject = await getUrl(name);
-      response.setHeader("Content-Type", "application/json");
+      response.setHeader('Content-Type', 'application/json');
       return response.status(200).send(lookupObject);
     }
 
-    return response
-      .status(400)
-      .send({
-        message: "Name was not provided. Name is a required query param.",
-        name: "BadRequest",
-      });
+    return response.status(400).send({
+      message: 'Name was not provided. Name is a required query param.',
+      name: 'BadRequest',
+    });
   } catch (e) {
     if (e instanceof NotFoundError) {
       return response.status(e.code).send(e.toInformativeObject());
     }
 
-    console.error("Unexpected error:", e);
+    console.error('Unexpected error:', e);
   }
 
   return response
     .status(500)
-    .send({ message: "Unexpected error occurred", name: "UnexpectedError" });
+    .send({ message: 'Unexpected error occurred', name: 'UnexpectedError' });
 });
 
 module.exports = router;
