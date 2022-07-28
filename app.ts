@@ -1,15 +1,12 @@
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-// var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+import createError from "http-errors";
+import express from "express";
+import path from "path";
+import logger from "morgan";
 
-// var indexRouter = require('./routes/index');
-// var usersRouter = require('./routes/users');
-var ethLookup = require ("./routes/eth-lookup");
-const { stdout } = require('process');
+import ethLookup from "./routes/eth-lookup";
+import {stdout} from "process";
 
-var app = express();
+const app = express();
 
 // view engine setup
 // app.set('views', path.join(__dirname, 'views'));
@@ -31,7 +28,7 @@ app.use(function(req, res, next) {
 });
 
 // error handler
-app.use(function(err, req, res, next) {
+app.use(function(err: any, req: any, res: any, next: any) {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
@@ -42,4 +39,4 @@ app.use(function(err, req, res, next) {
   // res.render('error');
 });
 
-module.exports = app;
+export default app;
