@@ -1,10 +1,7 @@
-// var express = require('express');
 import express from "express";
-const router = express.Router();
-// const { providers } = require('ethers');
-  import { providers } from "ethers";
-// const redis = require('../modules/redis');
+import { providers } from "ethers";
 import redis from "../modules/redis";
+const router = express.Router();
 
 const ETH_API_SERVER = `https://eth-mainnet.alchemyapi.io/v2/${process.env.ether_token}`;
 
