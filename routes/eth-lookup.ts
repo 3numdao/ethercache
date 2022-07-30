@@ -1,20 +1,20 @@
-import express from "express";
-import { providers } from "ethers";
-import redis from "../modules/redis";
+import express from 'express';
+import { providers } from 'ethers';
+import redis from '../modules/redis';
 const router = express.Router();
 
 const ETH_API_SERVER = `https://eth-mainnet.alchemyapi.io/v2/${process.env.ether_token}`;
 
 interface LookupObject {
-  name: string,
-  phone: string,
-  address: string,
+  name: string;
+  phone: string;
+  address: string;
 }
 
 interface NotFoundError {
-  name: string,
-  code: number,
-  address: string | null,
+  name: string;
+  code: number;
+  address: string | null;
 }
 
 class NotFoundError extends Error {
@@ -83,10 +83,10 @@ async function getUrl(name: string) {
 
   const lookupObject = await doLookup(name);
   if (lookupObject) {
-    let minutes: string | number | undefined = process.env.REDIS_EXPIRATION_MINUTES;
+    let minutes: string | number | undefined =
+      process.env.REDIS_EXPIRATION_MINUTES;
 
-    if (typeof minutes === 'string') 
-      minutes = parseInt(minutes);
+    if (typeof minutes === 'string') minutes = parseInt(minutes);
 
     await saveNameUrl(lookupObject, minutes);
   }
