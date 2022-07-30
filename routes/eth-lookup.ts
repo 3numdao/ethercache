@@ -1,23 +1,24 @@
-var express = require('express');
-var router = express.Router();
-const { providers } = require('ethers');
-const redis = require('../modules/redis');
+import express from "express";
+import { providers } from "ethers";
+import redis from "../modules/redis";
+const router = express.Router();
 
 const ETH_API_SERVER = `https://eth-mainnet.alchemyapi.io/v2/${process.env.ether_token}`;
 
-/*
- * {
- *  [key: string]: {
- *    phone: string,
- *    address: string,
- *    goodTill: number
- *  }
- * }
- */
-const memoryCache = {};
+interface LookupObject {
+  name: string,
+  phone: string,
+  address: string,
+}
+
+interface NotFoundError {
+  name: string,
+  code: number,
+  address: string | null,
+}
 
 class NotFoundError extends Error {
-  constructor(message, name, address) {
+  constructor(message: string, name: string, address: string | null) {
     super(message);
 
     this.name = name;
@@ -30,7 +31,7 @@ class NotFoundError extends Error {
   }
 }
 
-async function doLookup(name) {
+async function doLookup(name: string) {
   const provider = new providers.JsonRpcProvider(ETH_API_SERVER);
   const resolver = await provider.getResolver(name);
   if (!resolver) {
@@ -53,7 +54,7 @@ async function doLookup(name) {
   return { name, phone, address };
 }
 
-async function saveNameUrl(lookupObject, minutes = 5) {
+async function saveNameUrl(lookupObject: LookupObject, minutes = 5) {
   const secondsPerMinute = 60;
 
   const client = await redis.init(process.env.REDIS_URL);
@@ -68,7 +69,7 @@ async function saveNameUrl(lookupObject, minutes = 5) {
   await client.quit();
 }
 
-async function getUrl(name) {
+async function getUrl(name: string) {
   const client = await redis.init(process.env.REDIS_URL);
   const memoryItem = await client.get(name);
   await client.quit();
@@ -82,8 +83,10 @@ async function getUrl(name) {
 
   const lookupObject = await doLookup(name);
   if (lookupObject) {
-    let minutes = process.env.REDIS_EXPIRATION_MINUTES;
-    if (typeof minutes === 'string') minutes = parseInt(minutes);
+    let minutes: string | number | undefined = process.env.REDIS_EXPIRATION_MINUTES;
+
+    if (typeof minutes === 'string') 
+      minutes = parseInt(minutes);
 
     await saveNameUrl(lookupObject, minutes);
   }
@@ -93,9 +96,9 @@ async function getUrl(name) {
 
 router.get('/', async (request, response) => {
   try {
-    const name = request.query.name;
+    const name: string = request.query.name as string;
 
-    if (name && name != '') {
+    if (name && name !== '') {
       const lookupObject = await getUrl(name);
       response.setHeader('Content-Type', 'application/json');
       return response.status(200).send(lookupObject);
@@ -118,4 +121,4 @@ router.get('/', async (request, response) => {
     .send({ message: 'Unexpected error occurred', name: 'UnexpectedError' });
 });
 
-module.exports = router;
+export default router;
