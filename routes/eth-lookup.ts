@@ -1,35 +1,11 @@
 import express from 'express';
 import { providers } from 'ethers';
 import redis from '../modules/redis';
+import LookupObject from '../models/lookup-object';
+import NotFoundError from '../models/not-found-error';
 const router = express.Router();
 
 const ETH_API_SERVER = `https://eth-mainnet.alchemyapi.io/v2/${process.env.ether_token}`;
-
-interface LookupObject {
-  name: string;
-  phone: string;
-  address: string;
-}
-
-interface NotFoundError {
-  name: string;
-  code: number;
-  address: string | null;
-}
-
-class NotFoundError extends Error {
-  constructor(message: string, name: string, address: string | null) {
-    super(message);
-
-    this.name = name;
-    this.code = 404;
-    this.address = address;
-  }
-
-  toInformativeObject() {
-    return { name: this.name, address: this.address, message: this.message };
-  }
-}
 
 async function doLookup(name: string) {
   const provider = new providers.JsonRpcProvider(ETH_API_SERVER);
