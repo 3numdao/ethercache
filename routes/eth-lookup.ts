@@ -1,100 +1,34 @@
-import express from 'express';
 import { providers } from 'ethers';
 import redis from '../modules/redis';
 import LookupObject from '../models/lookup-object';
 import NotFoundError from '../models/not-found-error';
-const router = express.Router();
+import LookupBase from '../modules/lookup-base';
 
 const ETH_API_SERVER = `https://eth-mainnet.alchemyapi.io/v2/${process.env.ether_token}`;
 
-async function doLookup(name: string) {
-  const provider = new providers.JsonRpcProvider(ETH_API_SERVER);
-  const resolver = await provider.getResolver(name);
-  if (!resolver) {
-    throw new NotFoundError('ENS name was not found', 'ENSNotFound', null);
-  }
-
-  const [address, phone] = await Promise.all([
-    resolver.getAddress(),
-    resolver.getText('phone'),
-  ]);
-
-  if (!phone) {
-    throw new NotFoundError(
-      'ENS name did not have a phone number',
-      'PhoneNotFound',
-      address
-    );
-  }
-
-  return { name, phone, address };
-}
-
-async function saveNameUrl(lookupObject: LookupObject, minutes = 5) {
-  const secondsPerMinute = 60;
-
-  const client = await redis.init(process.env.REDIS_URL);
-  await client.set(
-    lookupObject.name,
-    JSON.stringify({
-      phone: lookupObject.phone,
-      address: lookupObject.address,
-    })
-  );
-  await client.expire(lookupObject.name, minutes * secondsPerMinute);
-  await client.quit();
-}
-
-async function getUrl(name: string) {
-  const client = await redis.init(process.env.REDIS_URL);
-  const memoryItem = await client.get(name);
-  await client.quit();
-
-  if (memoryItem) {
-    return {
-      name,
-      ...JSON.parse(memoryItem),
-    };
-  }
-
-  const lookupObject = await doLookup(name);
-  if (lookupObject) {
-    let minutes: string | number | undefined =
-      process.env.REDIS_EXPIRATION_MINUTES;
-
-    if (typeof minutes === 'string') minutes = parseInt(minutes);
-
-    await saveNameUrl(lookupObject, minutes);
-  }
-
-  return lookupObject;
-}
-
-router.get('/', async (request, response) => {
-  try {
-    const name: string = request.query.name as string;
-
-    if (name && name !== '') {
-      const lookupObject = await getUrl(name);
-      response.setHeader('Content-Type', 'application/json');
-      return response.status(200).send(lookupObject);
+class EthLookup extends LookupBase {
+  async doLookup(name: string): Promise<LookupObject> {
+    const provider = new providers.JsonRpcProvider(ETH_API_SERVER);
+    const resolver = await provider.getResolver(name);
+    if (!resolver) {
+      throw new NotFoundError('ENS name was not found', 'ENSNotFound', null);
     }
 
-    return response.status(400).send({
-      message: 'Name was not provided. Name is a required query param.',
-      name: 'BadRequest',
-    });
-  } catch (e) {
-    if (e instanceof NotFoundError) {
-      return response.status(e.code).send(e.toInformativeObject());
+    const [address, phone] = await Promise.all([
+      resolver.getAddress(),
+      resolver.getText('phone'),
+    ]);
+
+    if (!phone) {
+      throw new NotFoundError(
+        'ENS name did not have a phone number',
+        'PhoneNotFound',
+        address
+      );
     }
 
-    console.error('Unexpected error:', e);
+    return { name, phone, address };
   }
+}
 
-  return response
-    .status(500)
-    .send({ message: 'Unexpected error occurred', name: 'UnexpectedError' });
-});
-
-export default router;
+export default EthLookup;
