@@ -39,18 +39,17 @@ async function lookup(request: Request, response: Response) {
     });
   }
 
-
   const indexOfExtension = name.indexOf(".");
   const extension = name.substring(indexOfExtension + 1);
 
   try {
     switch(extension) {
-      case ".eth": {
+      case "eth": {
         const lookupObject = await ethLookup.getUrl(name);
         response.setHeader("Content-Type", "application/json");
         return response.status(200).send(lookupObject);
       }
-      case ".avax": {
+      case "avax": {
         const lookupObject = await avaxLookup.getUrl(name);
         response.setHeader("Content-Type", "application/json");
         return response.status(200).send(lookupObject);

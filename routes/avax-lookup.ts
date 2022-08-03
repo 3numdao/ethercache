@@ -1,4 +1,4 @@
-import * as AVVY from '@avvy/client';
+// import * as AVVY from '@avvy/client';
 import { providers } from 'ethers';
 import LookupObject from '../models/lookup-object';
 import LookupBase from '../modules/lookup-base';
@@ -14,14 +14,12 @@ import LookupBase from '../modules/lookup-base';
 
 class AvaxLookup extends LookupBase {
   async doLookup(name: string): Promise<LookupObject> {
-    // const provider = new providers.JsonRpcProvider(ETH_API_SERVER);
-    // const resolver = await provider.getResolver(name);
-    const avvyHack = AVVY as any;
-    const PROVIDER_URL = 'https://api.avax.network/ext/bc/C/rpc';
-    const provider = new providers.JsonRpcProvider(PROVIDER_URL);
-    const avvy = new avvyHack(provider);
-    const address = await avvy.name(name).resolve(avvyHack.RECORDS.EVM);
-    console.log(JSON.stringify(address));
+    // const avvyHack = AVVY as any;
+    // const PROVIDER_URL = 'https://api.avax.network/ext/bc/C/rpc';
+    // const provider = new providers.JsonRpcProvider(PROVIDER_URL);
+    // const avvy = new avvyHack(provider);
+    // const address = await avvy.name(name).resolve(avvyHack.RECORDS.EVM);
+    // console.log(JSON.stringify(address));
 
     return { name: 'asdf', phone: 'fdsa', address: 'zxcv' };
   }
