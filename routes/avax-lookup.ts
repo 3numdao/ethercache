@@ -19,16 +19,16 @@ class AvaxLookup extends LookupBase {
     const PROVIDER_URL = 'https://api.avax.network/ext/bc/C/rpc';
     const provider = new providers.JsonRpcProvider(PROVIDER_URL);
     const avvy = new AVVY(provider);
-    const resp = await avvy.name(name)
+    const resp = await avvy.name(name);
     if (!resp) {
       throw new NotFoundError('Avvy name was not found', 'AvvyNotFound', null);
     }
 
-    const address = resp.resolve(AVVY.RECORDS.EVM);
-    console.log('barfaddr', address);
-    const phone = resp.resolve(AVVY.RECORDS.PHONE);
-    console.log('barfphone', phone);
+    let address = await resp.resolve(AVVY.RECORDS.EVM);
+    address ||= await resp.resolve(AVVY.RECORDS.P_CHAIN);
+    address ||= await resp.resolve(AVVY.RECORDS.X_CHAIN);
 
+    const phone = await resp.resolve(AVVY.RECORDS.PHONE);
     if (!phone) {
       throw new NotFoundError(
         'Avvy name did not have a phone number',
