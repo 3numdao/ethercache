@@ -1,4 +1,1 @@
-declare module '@avvy/client' {
-  export interface Client {
-  }
-}
+declare module '@avvy/client';

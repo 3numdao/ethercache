@@ -1,7 +1,9 @@
-// import * as AVVY from '@avvy/client';
+import AVVY from '@avvy/client';
 import { providers } from 'ethers';
-import LookupObject from '../models/lookup-object';
-import LookupBase from '../modules/lookup-base';
+
+import LookupObject from '../models/lookup-object.js';
+import NotFoundError from '../models/not-found-error.js';
+import LookupBase from '../modules/lookup-base.js';
 
 // router.get("/", async (request: Request, response: Response) => {
 //   const name = request.query.name;
@@ -14,14 +16,28 @@ import LookupBase from '../modules/lookup-base';
 
 class AvaxLookup extends LookupBase {
   async doLookup(name: string): Promise<LookupObject> {
-    // const avvyHack = AVVY as any;
-    // const PROVIDER_URL = 'https://api.avax.network/ext/bc/C/rpc';
-    // const provider = new providers.JsonRpcProvider(PROVIDER_URL);
-    // const avvy = new avvyHack(provider);
-    // const address = await avvy.name(name).resolve(avvyHack.RECORDS.EVM);
-    // console.log(JSON.stringify(address));
+    const PROVIDER_URL = 'https://api.avax.network/ext/bc/C/rpc';
+    const provider = new providers.JsonRpcProvider(PROVIDER_URL);
+    const avvy = new AVVY(provider);
+    const resp = await avvy.name(name);
+    if (!resp) {
+      throw new NotFoundError('Avvy name was not found', 'AvvyNotFound', null);
+    }
 
-    return { name: 'asdf', phone: 'fdsa', address: 'zxcv' };
+    let address = await resp.resolve(AVVY.RECORDS.EVM);
+    address ||= await resp.resolve(AVVY.RECORDS.P_CHAIN);
+    address ||= await resp.resolve(AVVY.RECORDS.X_CHAIN);
+
+    const phone = await resp.resolve(AVVY.RECORDS.PHONE);
+    if (!phone) {
+      throw new NotFoundError(
+        'Avvy name did not have a phone number',
+        'PhoneNotFound',
+        address
+      );
+    }
+
+    return { name, phone, address };
   }
 }
 

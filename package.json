@@ -2,14 +2,19 @@
   "name": "ethercache",
   "version": "0.0.0",
   "private": true,
+  "type": "module",
+  "exports": "./dist/index.js",
   "scripts": {
     "start": "node ./dist",
     "watch": "nodemon ./dist",
     "heroku-postbuild": "tsc",
     "prettier": "prettier --write **/*.ts"
   },
+  "engines": {
+    "node": ">=18.4.0"
+  },
   "dependencies": {
-    "@avvy/client": "^2.1.10",
+    "@avvy/client": "^2.2.0",
     "debug": "~4.3.4",
     "ethers": "^5.6.9",
     "express": "~4.18.1",

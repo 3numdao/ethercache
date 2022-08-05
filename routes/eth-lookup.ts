@@ -1,8 +1,7 @@
 import { providers } from 'ethers';
-import redis from '../modules/redis';
-import LookupObject from '../models/lookup-object';
-import NotFoundError from '../models/not-found-error';
-import LookupBase from '../modules/lookup-base';
+import LookupObject from '../models/lookup-object.js';
+import NotFoundError from '../models/not-found-error.js';
+import LookupBase from '../modules/lookup-base.js';
 
 const ETH_API_SERVER = `https://eth-mainnet.alchemyapi.io/v2/${process.env.ether_token}`;
 

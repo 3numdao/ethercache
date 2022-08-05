@@ -1,14 +1,13 @@
 import createError from "http-errors";
 import express, { Request, Response, NextFunction } from 'express';
-import path from "path";
 import logger from "morgan";
 
 // import ethLookup from "./routes/eth-lookup";
 import {stdout} from "process";
 
-import EthLookup from "./routes/eth-lookup";
-import AvaxLookup from "./routes/avax-lookup";
-import NotFoundError from "./models/not-found-error";
+import EthLookup from "./routes/eth-lookup.js";
+import AvaxLookup from "./routes/avax-lookup.js";
+import NotFoundError from "./models/not-found-error.js";
 
 const ethLookup = new EthLookup();
 const avaxLookup = new AvaxLookup();

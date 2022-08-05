@@ -1,5 +1,5 @@
-import LookupObject from '../models/lookup-object';
-import redis from './redis';
+import LookupObject from '../models/lookup-object.js';
+import redis from './redis.js';
 
 // interface LookupBase {
 //   doLookup(name: string): Promise<LookupObject>;
