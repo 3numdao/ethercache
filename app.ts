@@ -1,40 +1,49 @@
-import createError from "http-errors";
+import createError from 'http-errors';
 import express, { Request, Response, NextFunction } from 'express';
-import path from "path";
-import logger from "morgan";
+import logger from 'morgan';
 
-import ethLookup from "./routes/eth-lookup";
-import {stdout} from "process";
+import ethLookup from './routes/eth-lookup';
+import { stdout } from 'process';
+
+interface ErrorStatus extends Error {
+  status?: number;
+}
+
+interface ErrorBody {
+  message: string;
+  env?: string;
+  stack?: string[];
+}
 
 const app = express();
-
-// view engine setup
-// app.set('views', path.join(__dirname, 'views'));
-// app.set('view engine', 'jade');
 
 app.use(logger(stdout.isTTY ? 'dev' : 'common'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-// app.use(cookieParser());
-// app.use(express.static(path.join(__dirname, 'public')));
-
-// app.use('/', indexRouter);
-// app.use('/users', usersRouter);
-app.use("/lookup", ethLookup);
+app.use('/lookup', ethLookup);
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
+app.use((req, res, next) => {
   next(createError(404));
 });
 
 // error handler
-app.use(function(err: Error, req: Request, res: Response, next: NextFunction) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
+app.use((err: ErrorStatus, req: Request, res: Response, next: NextFunction) => {
+  if (err && !err.status) console.error('Unexpected error:', err);
 
-  res.status(500);
-  res.send();
+  // set body, only providing error in development
+  const body: ErrorBody = {
+    message: err.message,
+  };
+
+  if (req.app.get('env') === 'development') {
+    body.env = req.app.get('env');
+    if (err.stack) body.stack = err.stack.split('\n');
+  }
+
+  // render the error page
+  res.status(err.status || 500);
+  res.send(body);
 });
 
 export default app;
