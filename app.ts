@@ -1,31 +1,21 @@
 import createError from "http-errors";
 import express, { Request, Response, NextFunction } from 'express';
 import logger from "morgan";
-
-// import ethLookup from "./routes/eth-lookup";
 import {stdout} from "process";
 
 import EthLookup from "./routes/eth-lookup.js";
 import AvaxLookup from "./routes/avax-lookup.js";
 import NotFoundError from "./models/not-found-error.js";
+import path from "node:path";
 
 const ethLookup = new EthLookup();
 const avaxLookup = new AvaxLookup();
 
 const app = express();
 
-// view engine setup
-// app.set('views', path.join(__dirname, 'views'));
-// app.set('view engine', 'jade');
-
 app.use(logger(stdout.isTTY ? 'dev' : 'common'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-// app.use(cookieParser());
-// app.use(express.static(path.join(__dirname, 'public')));
-
-// app.use('/', indexRouter);
-// app.use('/users', usersRouter);
 app.use("/lookup", lookup);
 
 async function lookup(request: Request, response: Response) {
@@ -38,23 +28,20 @@ async function lookup(request: Request, response: Response) {
     });
   }
 
-  const indexOfExtension = name.indexOf(".");
-  const extension = name.substring(indexOfExtension + 1);
+  const extension = path.extname(name);
 
   try {
     switch(extension) {
-      case "eth": {
+      case ".eth": {
         const lookupObject = await ethLookup.getUrl(name);
-        response.setHeader("Content-Type", "application/json");
         return response.status(200).send(lookupObject);
       }
-      case "avax": {
+      case ".avax": {
         const lookupObject = await avaxLookup.getUrl(name);
-        response.setHeader("Content-Type", "application/json");
         return response.status(200).send(lookupObject);
       }
       default: {
-        return response.status(404).send({status: 404, message: "Could not find path for the given extension"});
+        return response.status(404).send({status: 404, message: `Extension not supported: ${extension}`});
       }
     }
   } catch (e) {
@@ -64,24 +51,6 @@ async function lookup(request: Request, response: Response) {
 
     console.error('Unexpected error:', e);
   }
-
-  //     if (name && name !== '') {
-//       const lookupObject = await getUrl(name);
-//       response.setHeader('Content-Type', 'application/json');
-//       return response.status(200).send(lookupObject);
-//     }
-
-//     return response.status(400).send({
-//       message: 'Name was not provided. Name is a required query param.',
-//       name: 'BadRequest',
-//     });
-//   } catch (e) {
-//     if (e instanceof NotFoundError) {
-//       return response.status(e.code).send(e.toInformativeObject());
-//     }
-
-//     console.error('Unexpected error:', e);
-//   }
 }
 
 // catch 404 and forward to error handler
