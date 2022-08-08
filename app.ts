@@ -38,7 +38,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use('/lookup', lookup);
 
-async function lookup(request: Request, response: Response) {
+async function lookup(
+  request: Request,
+  response: Response,
+  next: NextFunction
+) {
   const name = request.query.name as string;
 
   if (!name || name === '') {
@@ -61,12 +65,10 @@ async function lookup(request: Request, response: Response) {
         return response.status(200).send(lookupObject);
       }
       default: {
-        return response
-          .status(404)
-          .send({
-            status: 404,
-            message: `Extension not supported: ${extension}`,
-          });
+        return response.status(404).send({
+          status: 404,
+          message: `Extension not supported: ${extension}`,
+        });
       }
     }
   } catch (e) {
@@ -74,7 +76,7 @@ async function lookup(request: Request, response: Response) {
       return response.status(e.code).send(e.toInformativeObject());
     }
 
-    console.error('Unexpected error:', e);
+    next(createError(<Error>e));
   }
 }
 

@@ -8,8 +8,10 @@
     "start": "node ./dist",
     "watch": "run-p watch-build watch-start",
     "heroku-postbuild": "tsc",
+    "watch-build": "tsc --watch",
+    "watch-start": "nodemon ./dist/index.js",
     "prettier": "prettier --write **/*.ts"
-  },
+},
   "dependencies": {
     "@avvy/client": "^2.2.0",
     "debug": "~4.3.4",
