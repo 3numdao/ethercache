@@ -13,6 +13,7 @@ interface ErrorBody {
   stack?: string[];
 }
 
+import extensions from './routes/extensions.js';
 import EthLookup from './routes/eth-lookup.js';
 import AvaxLookup from './routes/avax-lookup.js';
 import NotFoundError from './models/not-found-error.js';
@@ -36,6 +37,8 @@ const app = express();
 app.use(logger(stdout.isTTY ? 'dev' : 'common'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+app.use('/extensions', extensions);
 app.use('/lookup', lookup);
 
 async function lookup(
