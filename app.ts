@@ -13,9 +13,9 @@ interface ErrorBody {
   stack?: string[];
 }
 
-import EthLookup from "./routes/eth-lookup.js";
-import AvaxLookup from "./routes/avax-lookup.js";
-import NotFoundError from "./models/not-found-error.js";
+import EthLookup from './routes/eth-lookup.js';
+import AvaxLookup from './routes/avax-lookup.js';
+import NotFoundError from './models/not-found-error.js';
 import path from 'path';
 
 interface ErrorStatus extends Error {
@@ -36,12 +36,12 @@ const app = express();
 app.use(logger(stdout.isTTY ? 'dev' : 'common'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use("/lookup", lookup);
+app.use('/lookup', lookup);
 
 async function lookup(request: Request, response: Response) {
   const name = request.query.name as string;
 
-  if(!name || name === "") {
+  if (!name || name === '') {
     return response.status(400).send({
       message: 'Name was not provided. Name is a required query param.',
       name: 'BadRequest',
@@ -51,17 +51,22 @@ async function lookup(request: Request, response: Response) {
   const extension = path.extname(name);
 
   try {
-    switch(extension) {
-      case ".eth": {
+    switch (extension) {
+      case '.eth': {
         const lookupObject = await ethLookup.getUrl(name);
         return response.status(200).send(lookupObject);
       }
-      case ".avax": {
+      case '.avax': {
         const lookupObject = await avaxLookup.getUrl(name);
         return response.status(200).send(lookupObject);
       }
       default: {
-        return response.status(404).send({status: 404, message: `Extension not supported: ${extension}`});
+        return response
+          .status(404)
+          .send({
+            status: 404,
+            message: `Extension not supported: ${extension}`,
+          });
       }
     }
   } catch (e) {
