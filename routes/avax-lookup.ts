@@ -5,15 +5,6 @@ import LookupObject from '../models/lookup-object.js';
 import NotFoundError from '../models/not-found-error.js';
 import LookupBase from '../modules/lookup-base.js';
 
-// router.get("/", async (request: Request, response: Response) => {
-//   const name = request.query.name;
-//   const PROVIDER_URL = 'https://api.avax.network/ext/bc/C/rpc';
-//   const provider = new providers.JsonRpcProvider(PROVIDER_URL);
-//   const avvy = new AVVY(provider);
-//   const address = await avvy.name(name).resolve(AVVY.RECORDS.EVM);
-//   console.log(address);
-// });
-
 class AvaxLookup extends LookupBase {
   async doLookup(name: string): Promise<LookupObject> {
     const PROVIDER_URL = 'https://api.avax.network/ext/bc/C/rpc';

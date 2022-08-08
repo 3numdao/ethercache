@@ -1,10 +1,5 @@
 import LookupObject from '../models/lookup-object.js';
 import redis from './redis.js';
-
-// interface LookupBase {
-//   doLookup(name: string): Promise<LookupObject>;
-// }
-
 abstract class LookupBase {
   abstract doLookup(name: string): Promise<LookupObject>;
 
