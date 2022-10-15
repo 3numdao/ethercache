@@ -30,12 +30,10 @@ Placeholder: Needs link to Ethers.
 
 ## Private.env
 The current supported env vars that change the application in some way are described below:
-<ul>
-   <li>`ether_token`: # (Required) This value is used to identify the client as per their requirements.</li>
-   <li>`REDIS_EXPIRATION_MINUTES`: # (Optional) Allows configuration on the amount of time (in minutes) Redis will store the value. This value defaults to 5 in the code.</li>
-   <li>`REDIS_URL`: # (Optional -- locally) Configures the url for the Redis cache. When running locally with VSCode "devcontainers" this value is optional.</li>
-   <li>`PORT`: # (Optional) Configures the port the local Express server runs on, defaults to 3000.</li>
-<ul>
+<ul><li>`ether_token`: # (Required) This value is used to identify the client as per their requirements.</li>
+<li>`REDIS_EXPIRATION_MINUTES`: # (Optional) Allows configuration on the amount of time (in minutes) Redis will store the value. This value defaults to 5 in the code.</li>
+<li>`REDIS_URL`: # (Optional -- locally) Configures the url for the Redis cache. When running locally with VSCode "devcontainers" this value is optional.</li>
+<li>`PORT`: # (Optional) Configures the port the local Express server runs on, defaults to 3000.</li><ul>
 
 ## Redis
 As noted above this application uses Redis to stores the phone and address from Web3 responses received from both ethers and @avvy/client. By default the data is stored for 5 minutes but this can be configured using the REDIS_EXPIRATION_MINUTES value in one's `private.env`. Under the hood the key for this value is the name given in the request. That way if the name is searched again we can simply just check for that name.
