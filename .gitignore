@@ -105,3 +105,6 @@ dist
 
 # Private files
 .devcontainer/private.env
+
+# Notes and Scratch
+notes/
